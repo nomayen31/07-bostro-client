@@ -1,12 +1,44 @@
-const Login = () => {
+import { useContext } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { loadCaptchaEnginge, LoadCanvasTemplate, validateCaptcha } from 'react-simple-captcha';
+import { AuthContext } from '../../../providers/AuthProvider';
 
-    const handleLogin = e =>{
+
+const Login = () => {
+    const captchaRef = useRef(null);
+    const [disabled, setDisabled] = useState(true);
+
+    const { signIn } = useContext(AuthContext);
+
+    useEffect(() => {
+        loadCaptchaEnginge(6);
+    }, [])
+
+    const handleLogin = e => {
         e.preventDefault()
         const form = e.target;
         const email = form.email.value;
         const password = form.password.value;
-       console.log(email, password);
+        console.log(email, password);
+        signIn(email, password)
+            .then(result => {
+                const user = result.user;
+                console.log(user);
+            })
     }
+
+    const handleValidateCapture = () => {
+        const user_captcha_value = captchaRef.current.value;
+        if (validateCaptcha(user_captcha_value)) {
+            setDisabled(false)
+        }
+        else {
+            setDisabled(true)
+        }
+    }
+
+
     return (
         <div className="hero min-h-screen bg-base-200">
             <div className="hero-content flex-col md:flex-row-reverse">
@@ -35,7 +67,10 @@ const Login = () => {
                             <label className="label">
                                 <LoadCanvasTemplate />
                             </label>
-                            <input type="text" name="captcha" placeholder="type the captcha above" className="input input-bordered" />
+                            <input type="text"
+                                ref={captchaRef}
+                                name="captcha" placeholder="type the captcha above" className="input input-bordered" />
+                            <button onClick={handleValidateCapture} className='btn btn-outline btn-xs mt-2'>Validate</button>
 
                         </div>
                         <div className="form-control mt-6">
@@ -50,3 +85,4 @@ const Login = () => {
 };
 
 export default Login;
+
